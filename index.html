@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Google Sheet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Google Sheet Data</h1>
+    
+    <!-- Drop-down menu for selecting the column -->
+    <label for="searchColumn">Select Column:</label>
+    <select id="searchColumn">
+        <option value="Item Name">Item Name</option>
+        <option value="Location">Location</option>
+        <option value="Purchase Quantity">Purchase Quantity</option>
+        <option value="Sale Quantity">Sale Quantity</option>
+    </select>
+    
+    <!-- Search box and buttons -->
+    <input type="text" id="searchBox" placeholder="Search...">
+    <button id="searchButton">Search</button>
+    <button id="clearButton">Clear</button>
+
+    <!-- Table to display results -->
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Location</th>
+                <th>Purchase Quantity</th>
+                <th>Sale Quantity</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        // Google Sheets API configurations
+        const API_KEY = 'AIzaSyBH-JJkxtHoDddsBOnqeQUvxYdqguM2d5M';
+        const SHEET_ID = '1uHsWbeJ37rGoSTpsFUco9tlvjEsj48taPTH4AjxI5uY';
+        const SHEET_NAME = 'data';
+        const URL = `https://sheets.googleapis.com/v4/spreadsheets/${1uHsWbeJ37rGoSTpsFUco9tlvjEsj48taPTH4AjxI5uY}/values/${data}?key=${AIzaSyBH-JJkxtHoDddsBOnqeQUvxYdqguM2d5M}`;
+
+        // Fetch data from Google Sheets
+        async function fetchData() {
+            const response = await fetch(URL);
+            const data = await response.json();
+            const rows = data.values;
+
+            // Convert rows into objects with headers as keys
+            const headers = rows[0];
+            const result = rows.slice(1).map(row => {
+                let obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = row[index] || ''; // Handle empty cells
+                });
+                return obj;
+            });
+            return result;
+        }
+
+        // Display data in the table
+        function displayData(data) {
+            const tableBody = document.querySelector('#dataTable tbody');
+            tableBody.innerHTML = ''; // Clear previous data
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row['Item Name']}</td>
+                    <td>${row['Location']}</td>
+                    <td>${row['Purchase Quantity']}</td>
+                    <td>${row['Sale Quantity']}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Search function
+        function search(data) {
+            const searchColumn = document.getElementById('searchColumn').value;
+            const searchValue = document.getElementById('searchBox').value.toLowerCase();
+            const filteredData = data.filter(row => 
+                row[searchColumn].toLowerCase().includes(searchValue)
+            );
+            return filteredData;
+        }
+
+        // Event listeners
+        document.getElementById('searchButton').addEventListener('click', async () => {
+            const allData = await fetchData();
+            const filteredData = search(allData);
+            displayData(filteredData);
+        });
+
+        document.getElementById('clearButton').addEventListener('click', async () => {
+            document.getElementById('searchBox').value = '';
+            const allData = await fetchData();
+            displayData(allData);
+        });
+
+        // Load all data initially
+        (async () => {
+            const allData = await fetchData();
+            displayData(allData);
+        })();
+    </script>
+</body>
+</html>
