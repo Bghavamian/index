@@ -1,0 +1,14 @@
+[
+    {
+        "Item Name": "Laptop",
+        "Location": "Office",
+        "Purchase Quantity": "10",
+        "Sale Quantity": "2"
+    },
+    {
+        "Item Name": "Printer",
+        "Location": "Warehouse",
+        "Purchase Quantity": "5",
+        "Sale Quantity": "1"
+    }
+]
