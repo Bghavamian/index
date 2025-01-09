@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Google Sheet</title>
+    <title>Search Local Database</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,7 +29,7 @@
     </style>
 </head>
 <body>
-    <h1>Search Google Sheet Data</h1>
+    <h1>Search Local Database</h1>
     
     <!-- Drop-down menu for selecting the column -->
     <label for="searchColumn">Select Column:</label>
@@ -59,28 +59,14 @@
     </table>
 
     <script>
-        // Google Sheets API configurations
-        const API_KEY = 'AIzaSyAkygUUkoH6cYGly5fYqs6DkGOZF3haPUQ';
-        const SHEET_ID = '1uHsWbeJ37rGoSTpsFUco9tlvjEsj48taPTH4AjxI5uY';
-        const SHEET_NAME = 'data!A2:D2';
-        const URL = `https://sheets.googleapis.com/v4/spreadsheets/${1uHsWbeJ37rGoSTpsFUco9tlvjEsj48taPTH4AjxI5uY}/values/${data}?key=${AIzaSyBH-JJkxtHoDddsBOnqeQUvxYdqguM2d5M}`;
+        // URL of the JSON file in your GitHub repository
+        const URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/database.json';
 
-        // Fetch data from Google Sheets
+        // Fetch data from the JSON file
         async function fetchData() {
             const response = await fetch(URL);
             const data = await response.json();
-            const rows = data.values;
-
-            // Convert rows into objects with headers as keys
-            const headers = rows[0];
-            const result = rows.slice(1).map(row => {
-                let obj = {};
-                headers.forEach((header, index) => {
-                    obj[header] = row[index] || ''; // Handle empty cells
-                });
-                return obj;
-            });
-            return result;
+            return data;
         }
 
         // Display data in the table
