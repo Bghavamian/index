@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Data Grid</title>
+    <title>Dynamic Data Grid with Image Upload</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
         th {
             background-color: #f4f4f4;
         }
-        input, select, button {
+        input, select, button, textarea {
             margin: 10px 5px;
             padding: 8px;
             font-size: 14px;
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>Supply Room</h1>
+    <h1>Dynamic Data Grid with Add New Item and Image Upload</h1>
 
     <!-- Search Section -->
     <div class="form-group">
@@ -51,8 +51,9 @@
         <h3>Add New Item</h3>
         <input type="text" id="newItemName" placeholder="Item Name">
         <input type="text" id="newLocation" placeholder="Location">
-        <input type="number" id="newPurchaseQuantity" placeholder="Purchase Quantity">
-        <input type="number" id="newSaleQuantity" placeholder="Sale Quantity">
+        <input type="number" id="newInventoryQuantity" placeholder="Inventory Quantity">
+        <textarea id="newDescription" placeholder="Description"></textarea>
+        <input type="file" id="newImage" accept="image/*">
         <button id="addButton">Add Item</button>
     </div>
 
@@ -62,15 +63,16 @@
             <tr>
                 <th>Item Name</th>
                 <th>Location</th>
-                <th>Purchase Quantity</th>
-                <th>Sale Quantity</th>
+                <th>Inventory Quantity</th>
+                <th>Description</th>
+                <th>Image</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
 
     <script>
-        const URL = 'https://raw.githubusercontent.com/Bghavamian/index/refs/heads/main/database.json'; // Replace with your JSON file URL
+        const URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/database.json'; // Replace with your JSON file URL
         let data = []; // To hold the fetched data
 
         // Fetch data from the JSON file
@@ -89,21 +91,42 @@
                 tr.innerHTML = `
                     <td>${row['Item Name']}</td>
                     <td>${row['Location']}</td>
-                    <td>${row['Purchase Quantity']}</td>
-                    <td>${row['Sale Quantity']}</td>
+                    <td>${row['Inventory Quantity']}</td>
+                    <td>${row['Description']}</td>
+                    <td><a href="${row['Image']}" target="_blank">View Image</a></td>
                 `;
                 tableBody.appendChild(tr);
             });
         }
 
         // Add new item to the data array
-        function addItem() {
+        async function addItem() {
             const newItem = {
                 'Item Name': document.getElementById('newItemName').value.trim(),
                 'Location': document.getElementById('newLocation').value.trim(),
-                'Purchase Quantity': document.getElementById('newPurchaseQuantity').value.trim(),
-                'Sale Quantity': document.getElementById('newSaleQuantity').value.trim()
+                'Inventory Quantity': document.getElementById('newInventoryQuantity').value.trim(),
+                'Description': document.getElementById('newDescription').value.trim(),
+                'Image': ''
             };
+
+            const imageInput = document.getElementById('newImage');
+            if (imageInput.files.length > 0) {
+                const file = imageInput.files[0];
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('http://localhost:3000/upload', { // Replace with your server upload endpoint
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    newItem['Image'] = result.imageUrl; // Server should return the image URL
+                } catch (error) {
+                    alert('Error uploading image: ' + error.message);
+                    return;
+                }
+            }
 
             if (newItem['Item Name'] && newItem['Location']) {
                 data.push(newItem); // Add new item to the data array
@@ -119,8 +142,9 @@
         function clearAddItemForm() {
             document.getElementById('newItemName').value = '';
             document.getElementById('newLocation').value = '';
-            document.getElementById('newPurchaseQuantity').value = '';
-            document.getElementById('newSaleQuantity').value = '';
+            document.getElementById('newInventoryQuantity').value = '';
+            document.getElementById('newDescription').value = '';
+            document.getElementById('newImage').value = '';
         }
 
         // Search data
