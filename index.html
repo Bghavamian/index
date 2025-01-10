@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Local Database</title>
+    <title>Dynamic Data Grid</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,30 +22,41 @@
             background-color: #f4f4f4;
         }
         input, select, button {
-            margin: 10px 0;
+            margin: 10px 5px;
             padding: 8px;
             font-size: 14px;
+        }
+        .form-group {
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
-    <h1>Search Local Database</h1>
-    
-    <!-- Drop-down menu for selecting the column -->
-    <label for="searchColumn">Select Column:</label>
-    <select id="searchColumn">
-        <option value="Item Name">Item Name</option>
-        <option value="Location">Location</option>
-        <option value="Purchase Quantity">Purchase Quantity</option>
-        <option value="Sale Quantity">Sale Quantity</option>
-    </select>
-    
-    <!-- Search box and buttons -->
-    <input type="text" id="searchBox" placeholder="Search...">
-    <button id="searchButton">Search</button>
-    <button id="clearButton">Clear</button>
+    <h1>Dynamic Data Grid with Add New Item</h1>
 
-    <!-- Table to display results -->
+    <!-- Search Section -->
+    <div class="form-group">
+        <label for="searchColumn">Search by:</label>
+        <select id="searchColumn">
+            <option value="Item Name">Item Name</option>
+            <option value="Location">Location</option>
+        </select>
+        <input type="text" id="searchBox" placeholder="Search...">
+        <button id="searchButton">Search</button>
+        <button id="clearButton">Clear</button>
+    </div>
+
+    <!-- Add New Item Section -->
+    <div class="form-group">
+        <h3>Add New Item</h3>
+        <input type="text" id="newItemName" placeholder="Item Name">
+        <input type="text" id="newLocation" placeholder="Location">
+        <input type="number" id="newPurchaseQuantity" placeholder="Purchase Quantity">
+        <input type="number" id="newSaleQuantity" placeholder="Sale Quantity">
+        <button id="addButton">Add Item</button>
+    </div>
+
+    <!-- Data Grid -->
     <table id="dataTable">
         <thead>
             <tr>
@@ -59,22 +70,21 @@
     </table>
 
     <script>
-        // URL of the JSON file in your GitHub repository
-        const URL = 'https://raw.githubusercontent.com/bghavamian/index/main/database.json';
+        const URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/database.json'; // Replace with your JSON file URL
+        let data = []; // To hold the fetched data
 
         // Fetch data from the JSON file
         async function fetchData() {
             const response = await fetch(URL);
-            const data = await response.json();
-            return data;
+            data = await response.json();
+            displayData(data);
         }
 
-        // Display data in the table
-        function displayData(data) {
+        // Display data in the data grid
+        function displayData(dataArray) {
             const tableBody = document.querySelector('#dataTable tbody');
-            tableBody.innerHTML = ''; // Clear previous data
-
-            data.forEach(row => {
+            tableBody.innerHTML = ''; // Clear existing rows
+            dataArray.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${row['Item Name']}</td>
@@ -86,34 +96,56 @@
             });
         }
 
-        // Search function
-        function search(data) {
+        // Add new item to the data array
+        function addItem() {
+            const newItem = {
+                'Item Name': document.getElementById('newItemName').value.trim(),
+                'Location': document.getElementById('newLocation').value.trim(),
+                'Purchase Quantity': document.getElementById('newPurchaseQuantity').value.trim(),
+                'Sale Quantity': document.getElementById('newSaleQuantity').value.trim()
+            };
+
+            if (newItem['Item Name'] && newItem['Location']) {
+                data.push(newItem); // Add new item to the data array
+                displayData(data); // Refresh the data grid
+                clearAddItemForm();
+                alert('Item added successfully!');
+            } else {
+                alert('Please fill in all required fields!');
+            }
+        }
+
+        // Clear add item form inputs
+        function clearAddItemForm() {
+            document.getElementById('newItemName').value = '';
+            document.getElementById('newLocation').value = '';
+            document.getElementById('newPurchaseQuantity').value = '';
+            document.getElementById('newSaleQuantity').value = '';
+        }
+
+        // Search data
+        function search() {
             const searchColumn = document.getElementById('searchColumn').value;
             const searchValue = document.getElementById('searchBox').value.toLowerCase();
-            const filteredData = data.filter(row => 
+            const filteredData = data.filter(row =>
                 row[searchColumn].toLowerCase().includes(searchValue)
             );
-            return filteredData;
+            displayData(filteredData);
+        }
+
+        // Clear search and show all data
+        function clearSearch() {
+            document.getElementById('searchBox').value = '';
+            displayData(data);
         }
 
         // Event listeners
-        document.getElementById('searchButton').addEventListener('click', async () => {
-            const allData = await fetchData();
-            const filteredData = search(allData);
-            displayData(filteredData);
-        });
+        document.getElementById('searchButton').addEventListener('click', search);
+        document.getElementById('clearButton').addEventListener('click', clearSearch);
+        document.getElementById('addButton').addEventListener('click', addItem);
 
-        document.getElementById('clearButton').addEventListener('click', async () => {
-            document.getElementById('searchBox').value = '';
-            const allData = await fetchData();
-            displayData(allData);
-        });
-
-        // Load all data initially
-        (async () => {
-            const allData = await fetchData();
-            displayData(allData);
-        })();
+        // Load data on page load
+        fetchData();
     </script>
 </body>
 </html>
